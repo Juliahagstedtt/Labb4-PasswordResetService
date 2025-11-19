@@ -1,4 +1,4 @@
-namespace Greeter.Tests;
+namespace PasswordSystem.Tests;
 
 public class FakeEmailProvider : IEmailProvider
 {

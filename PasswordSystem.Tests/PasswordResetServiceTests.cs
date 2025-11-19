@@ -1,10 +1,11 @@
-namespace Greeter.Tests;
+namespace PasswordSystem.Tests;
 
 public class PasswordResetTests
 {
     private readonly FakeEmailProvider _fakeEmailProvider;
     private readonly FakeTokenGenerator _fakeTokenGenerator;
     private readonly FakeRateLimiter _fakeRateLimiter;
+    private readonly FakeUserRepository _fakeUserRepository;
     private readonly PasswordResetService _sut;
     private readonly string _testEmail;
 
@@ -13,12 +14,14 @@ public class PasswordResetTests
         _fakeEmailProvider = new FakeEmailProvider();
         _fakeTokenGenerator = new FakeTokenGenerator();
         _fakeRateLimiter = new FakeRateLimiter();
-        _sut = new PasswordResetService(_fakeEmailProvider, _fakeTokenGenerator, _fakeRateLimiter);
+        _fakeUserRepository = new FakeUserRepository();
+        _sut = new PasswordResetService(_fakeEmailProvider, _fakeTokenGenerator, _fakeRateLimiter, _fakeUserRepository);
         _testEmail = "test@test.com";
+        _fakeUserRepository.RegisterUser(_testEmail); // Registrera testanvändaren som standard
     }
 
     [Fact]
-    public void SendResetEmail_SendsToCorrectEmail()
+    public void SendResetEmail_SendsTokenToCorrectEmail()
     {
         // Act
         _sut.SendResetEmail(_testEmail);
@@ -60,5 +63,31 @@ public class PasswordResetTests
 
         // Assert
         Assert.Equal(_testEmail, _fakeEmailProvider.SentTo); // Email was sent successfully
+    }
+
+    [Fact]
+    public void SendResetEmail_UnregisteredEmail_ThrowsException()
+    {
+        // Arrange
+        string unregisteredEmail = "unregistered@test.com";
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => _sut.SendResetEmail(unregisteredEmail));
+        Assert.Contains("No user found", exception.Message);
+        Assert.Contains(unregisteredEmail, exception.Message);
+    }
+
+    [Fact]
+    public void SendResetEmail_RegisteredEmail_Succeeds()
+    {
+        // Arrange
+        string newEmail = "newuser@test.com";
+        _fakeUserRepository.RegisterUser(newEmail);
+
+        // Act
+        _sut.SendResetEmail(newEmail);
+
+        // Assert
+        Assert.Equal(newEmail, _fakeEmailProvider.SentTo);
     }
 }

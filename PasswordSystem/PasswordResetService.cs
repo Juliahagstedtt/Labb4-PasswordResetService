@@ -1,20 +1,19 @@
+namespace PasswordSystem;
 
-
-public class PasswordResetService
+public class PasswordResetService(IEmailProvider emailProvider, ITokenGenerator tokenGenerator, IRateLimiter rateLimiter, IUserRepository userRepository)
 {
-    IEmailProvider _emailProvider;
-    ITokenGenerator _tokenGenerator;
-    IRateLimiter _rateLimiter;
-
-    public PasswordResetService(IEmailProvider emailProvider, ITokenGenerator tokenGenerator, IRateLimiter rateLimiter)
-    {
-        _emailProvider = emailProvider;
-        _tokenGenerator = tokenGenerator;
-        _rateLimiter = rateLimiter;
-    }
+    IEmailProvider _emailProvider = emailProvider;
+    ITokenGenerator _tokenGenerator = tokenGenerator;
+    IRateLimiter _rateLimiter = rateLimiter;
+    IUserRepository _userRepository = userRepository;
 
     public void SendResetEmail(string email)
     {
+        if (!_userRepository.UserExists(email))
+        {
+            throw new InvalidOperationException($"No user found with email {email}.");
+        }
+
         if (!_rateLimiter.CanSendEmail(email))
         {
             throw new InvalidOperationException($"Password reset email for {email} can only be sent once per day.");
@@ -48,4 +47,9 @@ public interface IRateLimiter
 {
     public bool CanSendEmail(string email);
     public void RecordEmailSent(string email);
+}
+
+public interface IUserRepository
+{
+    public bool UserExists(string email);
 }
