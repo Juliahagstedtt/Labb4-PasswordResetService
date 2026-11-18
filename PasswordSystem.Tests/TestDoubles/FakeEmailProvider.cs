@@ -1,13 +1,13 @@
 namespace PasswordSystem.Tests;
 
+public record SentEmail(string To, string Subject, string Body);
+
 public class FakeEmailProvider : IEmailProvider
 {
-    public string SentTo { get; private set; } = "";
-    public string Body { get; private set; } = "";
+    public List<SentEmail> SentEmails { get; } = [];
 
     public void SendEmail(string to, string subject, string body)
     {
-        Body = body;
-        SentTo = to;
+        SentEmails.Add(new SentEmail(to, subject, body));
     }
 }

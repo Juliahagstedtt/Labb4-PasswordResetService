@@ -2,8 +2,8 @@ namespace PasswordSystem;
 
 public class PasswordResetService(IEmailProvider emailProvider, ITokenGenerator tokenGenerator)
 {
-    IEmailProvider _emailProvider = emailProvider;
-    ITokenGenerator _tokenGenerator = tokenGenerator;
+    private readonly IEmailProvider _emailProvider = emailProvider;
+    private readonly ITokenGenerator _tokenGenerator = tokenGenerator;
 
     public void SendResetEmail(string email)
     {

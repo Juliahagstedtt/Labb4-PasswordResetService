@@ -1,21 +1,22 @@
 namespace PasswordSystem.Tests;
 
-public class PasswordResetTests
+public class PasswordResetServiceTests
 {
     [Fact]
     public void SendResetEmail_SendsTokenToCorrectEmail()
     {
         // Arrange
-        var _fakeEmailProvider = new FakeEmailProvider();
-        var _fakeTokenGenerator = new FakeTokenGenerator();
-        var _sut = new PasswordResetService(_fakeEmailProvider, _fakeTokenGenerator);
-        var _testEmail = "test@test.com";
+        var fakeEmailProvider = new FakeEmailProvider();
+        var fakeTokenGenerator = new FakeTokenGenerator();
+        var sut = new PasswordResetService(fakeEmailProvider, fakeTokenGenerator);
+        var testEmail = "test@test.com";
 
         // Act
-        _sut.SendResetEmail(_testEmail);
+        sut.SendResetEmail(testEmail);
 
         // Assert
-        Assert.Equal(_testEmail, _fakeEmailProvider.SentTo);
-        Assert.Contains(_fakeTokenGenerator.Token, _fakeEmailProvider.Body);
+        var sentEmail = Assert.Single(fakeEmailProvider.SentEmails);
+        Assert.Equal(testEmail, sentEmail.To);
+        Assert.Contains(fakeTokenGenerator.Token, sentEmail.Body);
     }
 }
