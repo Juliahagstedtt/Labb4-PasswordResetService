@@ -1,16 +1,24 @@
 namespace PasswordSystem;
 
-public class PasswordResetService(IEmailProvider emailProvider, ITokenGenerator tokenGenerator)
+public class PasswordResetService(IEmailProvider emailProvider, ITokenGenerator tokenGenerator, IUserRepository userRepository)
 {
     private readonly IEmailProvider _emailProvider = emailProvider;
     private readonly ITokenGenerator _tokenGenerator = tokenGenerator;
 
+    private readonly IUserRepository _userRepository = userRepository;
+
     public void SendResetEmail(string email)
     {
-        string subject = "Password Reset Requested";
-        string token = _tokenGenerator.Generate();
-        string body = CreateEmailBody(token);
-        _emailProvider.SendEmail(email, subject, body);
+        bool userExists = _userRepository.IsEmailRegistered(email);
+
+        if(userExists)
+        {
+            string subject = "Password Reset Requested";
+            string token = _tokenGenerator.Generate();
+            string body = CreateEmailBody(token);
+            
+            _emailProvider.SendEmail(email, subject, body);
+        }
     }
 
     private string CreateEmailBody(string token)
@@ -19,3 +27,5 @@ public class PasswordResetService(IEmailProvider emailProvider, ITokenGenerator 
         return $"Click the following link to reset your password: {link}";
     }
 }
+
+// Kontrollera att e-postadressen är registrerad
